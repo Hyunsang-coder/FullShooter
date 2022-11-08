@@ -74,11 +74,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	bool bIsAiming = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	float DefaultFOV = 90.f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	float ZoomedFOV = 40.f;
+	float DefaultFOV;
+	float ZoomedFOV;
 
 
 public: 

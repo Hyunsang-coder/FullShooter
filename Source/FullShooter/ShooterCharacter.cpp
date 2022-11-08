@@ -13,7 +13,12 @@
 #include "particles/ParticleSystemComponent.h"
 
 // Sets default values
-AShooterCharacter::AShooterCharacter(): BaseTurnRate(45.f), BaseLookUpRate(45.f)
+AShooterCharacter::AShooterCharacter() :
+	BaseTurnRate(45.f),
+	BaseLookUpRate(45.f),
+	bIsAiming(false),
+	DefaultFOV(90.f),
+	ZoomedFOV(35.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -21,7 +26,7 @@ AShooterCharacter::AShooterCharacter(): BaseTurnRate(45.f), BaseLookUpRate(45.f)
 	// CameraBoom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.f;
+	CameraBoom->TargetArmLength = 180.f;
 	CameraBoom->bUsePawnControlRotation = true;
 	CameraBoom->SocketOffset = FVector(0.f, 50.f, 50.f);
 
@@ -29,7 +34,6 @@ AShooterCharacter::AShooterCharacter(): BaseTurnRate(45.f), BaseLookUpRate(45.f)
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-	FollowCamera->SetFieldOfView(DefaultFOV);
 
 	//Controller only affects the camera, not the character
 	bUseControllerRotationPitch = false;
