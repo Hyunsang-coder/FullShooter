@@ -29,6 +29,7 @@ AShooterCharacter::AShooterCharacter(): BaseTurnRate(45.f), BaseLookUpRate(45.f)
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+	FollowCamera->SetFieldOfView(DefaultFOV);
 
 	//Controller only affects the camera, not the character
 	bUseControllerRotationPitch = false;
@@ -70,6 +71,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::FireWeapon);
+	PlayerInputComponent->BindAction("AimButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::AimButtonPressed);
+	PlayerInputComponent->BindAction("AimButton", EInputEvent::IE_Released, this, &AShooterCharacter::AimButtonReleased);
+
 }
 
 
@@ -242,6 +246,18 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 		return true;
 	}
 	return false;
+}
+
+void AShooterCharacter::AimButtonPressed()
+{
+	bIsAiming = true;
+	FollowCamera->SetFieldOfView(ZoomedFOV);
+}
+
+void AShooterCharacter::AimButtonReleased()
+{
+	bIsAiming = false;
+	FollowCamera->SetFieldOfView(DefaultFOV);
 }
 
 
