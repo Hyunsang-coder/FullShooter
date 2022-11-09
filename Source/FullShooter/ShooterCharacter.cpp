@@ -163,10 +163,21 @@ void AShooterCharacter::FireWeapon()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
 		}
 
-		//BeamEndPoint 계산
+				
+		//BeamEndPoint 가져 와 -> 타격 효과(impact particle) 구현
 		FVector BeamEndPoint;
-		GetBeamEndLocation(SocketTransform.GetLocation(), BeamEndPoint);
+		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEndPoint);
 
+		if (bBeamEnd)
+		{
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ImpactParticles,
+					BeamEndPoint);
+			}
+		}
 		// Beam 효과 
 		if (BeamParticles)
 		{
@@ -221,7 +232,7 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 
 	if (bScreenToWorld)
 	{
-		// 화면 중심 기준 LineTracing
+		// 1.화면 중심 기준 LineTracing
 		FHitResult ScreenTraceHit;
 		const FVector Start = CrosshairWorldPosition;
 		const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * WeaponRange;
@@ -240,11 +251,10 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 		}
 
 
-		// Barrel기준 LineTracing 
+		// 2. Barrel기준 LineTracing 
 		FHitResult BarrelTraceHit;
 		const FVector BarrelStart = MuzzleSocketLocation;
-		const FVector BarrelEnd = End;
-
+		const FVector BarrelEnd = OutBeamLocation;
 
 		GetWorld()->LineTraceSingleByChannel(
 			BarrelTraceHit,
@@ -255,15 +265,6 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 		if (BarrelTraceHit.bBlockingHit)
 		{
 			OutBeamLocation = BarrelTraceHit.Location;
-
-			// Impact Particle 효과
-			if (ImpactParticles)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(
-					GetWorld(),
-					ImpactParticles,
-					OutBeamLocation);
-			}
 		}
 		return true;
 	}
