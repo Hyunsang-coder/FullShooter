@@ -18,7 +18,12 @@ AShooterCharacter::AShooterCharacter() :
 	BaseLookUpRate(45.f),
 	bIsAiming(false),
 	DefaultFOV(90.f),
-	ZoomedFOV(35.f)
+	ZoomedFOV(35.f),
+	HipFireTurnRate(45.f),
+	HipFireLookUpRate(45.f),
+	AimingTurnRate(22.f),
+	AimingLookUpRate(22.f)
+
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -65,6 +70,17 @@ void AShooterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CameraInterpZoom(DeltaTime);
+
+	if (bIsAiming) 
+	{
+		BaseTurnRate = AimingTurnRate;
+		BaseLookUpRate = AimingLookUpRate;
+	}
+	else
+	{
+		BaseTurnRate = HipFireTurnRate;
+		BaseLookUpRate = HipFireLookUpRate;
+	}
 }
 
 void AShooterCharacter::CameraInterpZoom(float DeltaTime) 
@@ -88,8 +104,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AShooterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AShooterCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("TurnRate", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("TurnRate", this, &AShooterCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &AShooterCharacter::LookUpAtRate);
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::FireWeapon);
@@ -129,18 +145,16 @@ void AShooterCharacter::MoveRight(float Value)
 	}
 }
 
-/*
+
 void AShooterCharacter::TurnAtRate(float Rate)
 {
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds()); // deg/sec * sec/frame
+	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds() * SensitivityMultiplier); // deg/sec * sec/frame
 }
 
-void AShooterCharacter::LookUpRate(float Rate)
+void AShooterCharacter::LookUpAtRate(float Rate)
 {
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds()); // deg/sec * sec/frame
+	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds() * SensitivityMultiplier); // deg/sec * sec/frame
 }
-
-*/
 
 
 void AShooterCharacter::FireWeapon()
