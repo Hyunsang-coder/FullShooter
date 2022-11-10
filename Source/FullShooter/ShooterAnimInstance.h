@@ -41,7 +41,8 @@ private:
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float LastMovementOffsetYaw;
 
-	UPROPERTY(VisibleAnywhere, BluePrintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float IdleElapsed = 0;
+	
+	UPROPERTY(VisibleAnywhere, BluePrintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	bool bIsAiming;
 
 };

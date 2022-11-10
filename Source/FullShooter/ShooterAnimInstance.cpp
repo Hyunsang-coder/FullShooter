@@ -49,6 +49,7 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 			GEngine->AddOnScreenDebugMessage(1, 0.f, FColor::White, OffsetYawMessage);
 		}
 		
+		bIsAiming = ShooterCharacter->GetIsAiming();
 	}
 }
 
