@@ -70,8 +70,14 @@ void AShooterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CameraInterpZoom(DeltaTime);
+	UpdateTurnLookupRate();
+	CalculateCrosshairSpread(DeltaTime);
 
-	if (bIsAiming) 
+}
+
+void AShooterCharacter::UpdateTurnLookupRate() 
+{
+	if (bIsAiming)
 	{
 		BaseTurnRate = AimingTurnRate;
 		BaseLookUpRate = AimingLookUpRate;
@@ -80,6 +86,22 @@ void AShooterCharacter::Tick(float DeltaTime)
 	{
 		BaseTurnRate = HipFireTurnRate;
 		BaseLookUpRate = HipFireLookUpRate;
+	}
+}
+
+void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime) 
+{
+	FVector2D WalkSpeedRange{ 0.f, 600.f };
+	FVector2D VelocityMultiplierRange{ 0.f, 1.f };
+	FVector Velocity { GetVelocity()};
+
+	// WalkSpeedRange 범위의 Velocity.size의 값을 VelocityMultiplierRange로 변환 
+	CrosshairVelocityFactor = 0.5f + FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+
+	FString VelocityFactorLog = FString::Printf(TEXT("CrosshairVelocityFactor: %f"), CrosshairVelocityFactor);
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(0, 2.f, FColor::Yellow, VelocityFactorLog);
 	}
 }
 
@@ -244,9 +266,9 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 		CrosshairWorldPosition,
 		CrosshairWorldDirection);
 
+	// 1.화면 중심 기준 LineTracing
 	if (bScreenToWorld)
 	{
-		// 1.화면 중심 기준 LineTracing
 		FHitResult ScreenTraceHit;
 		const FVector Start = CrosshairWorldPosition;
 		const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * WeaponRange;

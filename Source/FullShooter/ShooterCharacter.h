@@ -33,6 +33,8 @@ protected:
 	void AimButtonReleased();
 
 	void CameraInterpZoom(float DeltaTime);
+	void UpdateTurnLookupRate();
+	void CalculateCrosshairSpread(float DeltaTime);
 
 public:	
 	// Called every frame
@@ -42,13 +44,25 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
+	// Cemera related 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	// turn rate in deg/sec. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+	bool bIsAiming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float ZoomInterpSpeed = 20.f;
+
+	float DefaultFOV;
+	float ZoomedFOV;
+	float CurrentFOV;
+
+
+	// Turn rates in deg/sec. 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float BaseTurnRate;
 
@@ -71,6 +85,24 @@ private:
 	float SensitivityMultiplier = 1.f;
 
 
+	// Crosshair multiplier + relevant factors 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
+	float CorsshairSpreadMultiplier;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
+	float CrosshairVelocityFactor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
+	float CrosshairInAirFactor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
+	float CrosshairAimFactor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
+	float CrosshairShootingFactor;
+
+
+	// Weapon assets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sound, meta = (AllowPrivateAccess = "true"))
 	class USoundCue* FireSound;
 
@@ -89,16 +121,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	float WeaponRange = 5000.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	bool bIsAiming = false;
 
-	float DefaultFOV;
-	float ZoomedFOV;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	float ZoomInterpSpeed = 20.f;
-
-	float CurrentFOV;
+	
 
 
 public: 
