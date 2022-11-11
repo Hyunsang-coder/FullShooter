@@ -16,13 +16,17 @@
 AShooterCharacter::AShooterCharacter() :
 	BaseTurnRate(45.f),
 	BaseLookUpRate(45.f),
-	bIsAiming(false),
-	DefaultFOV(90.f),
-	ZoomedFOV(35.f),
 	HipFireTurnRate(45.f),
 	HipFireLookUpRate(45.f),
 	AimingTurnRate(22.f),
-	AimingLookUpRate(22.f)
+	AimingLookUpRate(22.f),
+	bIsAiming(false),
+	DefaultFOV(90.f),
+	ZoomedFOV(35.f),
+	CrosshairVelocityFactor(0.f),
+	CrosshairAimFactor(0.f),
+	CrosshairInAirFactor(0.f),
+	CrosshairShootingFactor(0.f)
 
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -89,16 +93,39 @@ void AShooterCharacter::UpdateTurnLookupRate()
 	}
 }
 
+float AShooterCharacter::GetCrosshairSpreadMultiplier() const
+{
+	return CorsshairSpreadMultiplier;
+}
+
 void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime) 
 {
 	FVector2D WalkSpeedRange{ 0.f, 600.f };
 	FVector2D VelocityMultiplierRange{ 0.f, 1.f };
 	FVector Velocity { GetVelocity()};
+	Velocity.Z = 0.f;
 
 	// WalkSpeedRange 범위의 Velocity.size의 값을 VelocityMultiplierRange로 변환 
-	CrosshairVelocityFactor = 0.5f + FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(
+		WalkSpeedRange,
+		VelocityMultiplierRange,
+		Velocity.Size());
 
-	FString VelocityFactorLog = FString::Printf(TEXT("CrosshairVelocityFactor: %f"), CrosshairVelocityFactor);
+	//  InAirFactor
+	if (GetCharacterMovement()->IsFalling()) 
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
+	}
+	else 
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 15.f);
+	}
+
+
+	CorsshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor + CrosshairInAirFactor + CrosshairAimFactor;
+
+
+	FString VelocityFactorLog = FString::Printf(TEXT("CrosshairSpreadMultiplier: %f"), CorsshairSpreadMultiplier);
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(0, 2.f, FColor::Yellow, VelocityFactorLog);
@@ -110,10 +137,12 @@ void AShooterCharacter::CameraInterpZoom(float DeltaTime)
 	if (bIsAiming)
 	{
 		CurrentFOV = FMath::FInterpTo(CurrentFOV, ZoomedFOV, DeltaTime, ZoomInterpSpeed);
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, -0.5f, DeltaTime, ZoomInterpSpeed);
 	}
 	else
 	{
 		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0, DeltaTime, ZoomInterpSpeed);
 	}
 	FollowCamera->SetFieldOfView(CurrentFOV);
 }
