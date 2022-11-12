@@ -36,6 +36,12 @@ protected:
 	void UpdateTurnLookupRate();
 	void CalculateCrosshairSpread(float DeltaTime);
 
+
+	void StartShootingSpread();
+	
+	UFUNCTION()
+	void FinishShootingSpread();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -100,6 +106,14 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
 	float CrosshairShootingFactor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
+	float CrosshairShootingDuration;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
+	bool bIsShooting;
+
+	FTimerHandle ShootingTimer;
 
 
 	// Weapon assets

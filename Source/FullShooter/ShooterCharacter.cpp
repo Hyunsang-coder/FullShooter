@@ -26,7 +26,9 @@ AShooterCharacter::AShooterCharacter() :
 	CrosshairVelocityFactor(0.f),
 	CrosshairAimFactor(0.f),
 	CrosshairInAirFactor(0.f),
-	CrosshairShootingFactor(0.f)
+	CrosshairShootingFactor(0.f),
+	bIsShooting(false),
+	CrosshairShootingDuration(0.05f)
 
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -121,8 +123,32 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 15.f);
 	}
 
+	// AimFactor
+	if (bIsAiming)
+	{
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, -0.5f, DeltaTime, ZoomInterpSpeed);
+	}
+	else
+	{
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0, DeltaTime, ZoomInterpSpeed);
+	}
 
-	CorsshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor + CrosshairInAirFactor + CrosshairAimFactor;
+	// ShiootingFactor
+	if (bIsShooting) 
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.3f, DeltaTime, 60.f);
+	}
+	else 
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 60.f);
+	}
+
+	CorsshairSpreadMultiplier = 
+		0.5f +
+		CrosshairVelocityFactor + 
+		CrosshairInAirFactor + 
+		CrosshairAimFactor + 
+		CrosshairShootingFactor;
 
 
 	FString VelocityFactorLog = FString::Printf(TEXT("CrosshairSpreadMultiplier: %f"), CorsshairSpreadMultiplier);
@@ -137,12 +163,10 @@ void AShooterCharacter::CameraInterpZoom(float DeltaTime)
 	if (bIsAiming)
 	{
 		CurrentFOV = FMath::FInterpTo(CurrentFOV, ZoomedFOV, DeltaTime, ZoomInterpSpeed);
-		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, -0.5f, DeltaTime, ZoomInterpSpeed);
 	}
 	else
 	{
 		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);
-		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0, DeltaTime, ZoomInterpSpeed);
 	}
 	FollowCamera->SetFieldOfView(CurrentFOV);
 }
@@ -265,6 +289,8 @@ void AShooterCharacter::FireWeapon()
 		AnimInstance->Montage_Play(HipFireMontage);
 		AnimInstance->Montage_JumpToSection(FName("StartFire"));
 	}
+	StartShootingSpread();
+
 	/*FString WeaponFireLog = FString::Printf(TEXT("Fired the weapon"));
 	if (GEngine)
 	{
@@ -346,4 +372,17 @@ void AShooterCharacter::AimButtonReleased()
 	bIsAiming = false;
 }
 
+void AShooterCharacter::StartShootingSpread() 
+{
+	bIsShooting = true;
+	GetWorldTimerManager().SetTimer(
+		ShootingTimer, 
+		this, 
+		&AShooterCharacter::FinishShootingSpread,
+		CrosshairShootingDuration);
+}
 
+void AShooterCharacter::FinishShootingSpread()
+{
+	bIsShooting = false;
+}
