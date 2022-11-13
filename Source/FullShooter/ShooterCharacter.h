@@ -35,12 +35,20 @@ protected:
 	void CameraInterpZoom(float DeltaTime);
 	void UpdateTurnLookupRate();
 	void CalculateCrosshairSpread(float DeltaTime);
-
-
-	void StartShootingSpread();
 	
+	void StartShootingSpread();
+
 	UFUNCTION()
 	void FinishShootingSpread();
+
+	// Auto Fire-related functions 
+	void FireButtonPressed();
+	void FireButtonReleased();
+	void AutoFire();
+	UFUNCTION()
+	void AutoFireReset();
+
+	
 
 public:	
 	// Called every frame
@@ -115,6 +123,15 @@ private:
 
 	FTimerHandle ShootingTimer;
 
+	// Automatic fire variables
+	bool bShouldFire = true;
+	bool bFireButtonPressed = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+	float AutomaticFireRate = 0.1f;
+
+	FTimerHandle FireHandle;
+
 
 	// Weapon assets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sound, meta = (AllowPrivateAccess = "true"))
@@ -135,7 +152,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	float WeaponRange = 5000.f;
 
-
+	
 	
 
 

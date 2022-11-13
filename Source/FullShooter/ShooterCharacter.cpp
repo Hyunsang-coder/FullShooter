@@ -183,7 +183,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AShooterCharacter::LookUpAtRate);
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", EInputEvent::IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::FireWeapon);
+	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::FireButtonPressed);
+	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Released, this, &AShooterCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("AimButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::AimButtonPressed);
 	PlayerInputComponent->BindAction("AimButton", EInputEvent::IE_Released, this, &AShooterCharacter::AimButtonReleased);
 
@@ -385,4 +386,42 @@ void AShooterCharacter::StartShootingSpread()
 void AShooterCharacter::FinishShootingSpread()
 {
 	bIsShooting = false;
+}
+
+void AShooterCharacter::FireButtonPressed()
+{
+	/* Pressed 동안에 계속 아래 내용이 실행된다는 뜻이 아님,
+	누르는 순간 한 번 bool 값 변경 및 아래 함수 실행 */
+	bFireButtonPressed = true;
+	AutoFire();
+}
+
+void AShooterCharacter::FireButtonReleased()
+{
+	//버튼 떼는 순간 아래 bool 값 한 번 세팅
+	bFireButtonPressed = false;
+}
+
+void AShooterCharacter::AutoFire()
+{
+	if(bShouldFire) 
+	{
+		FireWeapon();
+		bShouldFire = false;
+		//bShouldFire = false;
+		GetWorldTimerManager().SetTimer(
+			FireHandle,
+			this,
+			&AShooterCharacter::AutoFireReset,
+			AutomaticFireRate);
+	}
+}
+
+void AShooterCharacter::AutoFireReset()
+{
+	bShouldFire = true;
+	if (bFireButtonPressed) 
+	{
+		AutoFire();
+	}
 }
