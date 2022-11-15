@@ -35,6 +35,7 @@ private:
 
 
 public:
-	USkeletalMeshComponent* GetItemMesh() const;
-	UBoxComponent* GetCollisionBox() const;
+	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; };
+	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; };
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 };

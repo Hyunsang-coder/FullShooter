@@ -11,6 +11,8 @@
 #include "Particles/ParticleSystem.h"
 #include "DrawDebugHelpers.h"
 #include "particles/ParticleSystemComponent.h"
+#include "Item.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter() :
@@ -78,6 +80,19 @@ void AShooterCharacter::Tick(float DeltaTime)
 	CameraInterpZoom(DeltaTime);
 	UpdateTurnLookupRate();
 	CalculateCrosshairSpread(DeltaTime);
+
+	FHitResult ItemHitResult;
+	TraceUnderCrossHair(ItemHitResult);
+	if (ItemHitResult.bBlockingHit) 
+	{
+
+		AItem* HitItem = Cast<AItem>(ItemHitResult.GetActor());
+		// Casting 성공 해야 SetVisibility 시도. 실패 체크 없으면 크래시 
+		if (HitItem && HitItem->GetPickupWidget()) 
+		{
+			HitItem->GetPickupWidget()->SetVisibility(true);
+		}
+	}
 
 }
 
@@ -424,4 +439,46 @@ void AShooterCharacter::AutoFireReset()
 	{
 		AutoFire();
 	}
+}
+
+bool AShooterCharacter::TraceUnderCrossHair(FHitResult& ItemHitResult) 
+{
+	//GEngine으로 ViewportSize 가져오기
+	FVector2D ViewportSize;
+	if (GEngine)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	// ViewportSize 조정 후 2D스크린 좌표를 3D 월드 좌표로 변환
+	FVector2D CrosshairLocation{ ViewportSize.X / 2.f, ViewportSize.Y / 2.f };
+	CrosshairLocation.Y -= 50.f;
+
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection);
+
+	// 화면 중심 기준 LineTracing
+	if (bScreenToWorld)
+	{
+		const FVector Start = CrosshairWorldPosition;
+		const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * WeaponRange;
+
+		GetWorld()->LineTraceSingleByChannel(
+			ItemHitResult,
+			Start,
+			End,
+			ECollisionChannel::ECC_Visibility);
+
+		if (ItemHitResult.bBlockingHit && ItemHitResult.GetActor())
+		{
+			return true;
+		}
+	}
+	return false;
 }

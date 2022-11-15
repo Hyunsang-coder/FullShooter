@@ -16,6 +16,8 @@ AItem::AItem()
 
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("ItemBox"));
 	CollisionBox->SetupAttachment(ItemMesh);
+	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(ItemMesh);
@@ -26,6 +28,7 @@ void AItem::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	PickupWidget->SetVisibility(false);
 }
 
 // Called every frame
@@ -34,14 +37,3 @@ void AItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-USkeletalMeshComponent* AItem::GetItemMesh() const
-{
-	return ItemMesh;
-}
-
-UBoxComponent* AItem::GetCollisionBox() const
-{
-	return CollisionBox;
-}
-

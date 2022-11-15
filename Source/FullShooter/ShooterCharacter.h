@@ -48,6 +48,7 @@ protected:
 	UFUNCTION()
 	void AutoFireReset();
 
+	bool TraceUnderCrossHair(FHitResult& ItemHitResult);
 	
 
 public:	
