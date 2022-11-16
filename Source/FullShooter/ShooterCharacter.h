@@ -27,7 +27,7 @@ protected:
 	void LookUpAtRate(float Value);
 	void FireWeapon();
 
-	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamEndLocation);
 
 	void AimButtonPressed();
 	void AimButtonReleased();
@@ -48,7 +48,7 @@ protected:
 	UFUNCTION()
 	void AutoFireReset();
 
-	bool TraceUnderCrossHair(FHitResult& ItemHitResult);
+	bool TraceUnderCrossHair(FHitResult& ItemHitResult, FVector& OutEndLocation);
 	
 
 public:	

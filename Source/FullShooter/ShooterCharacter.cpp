@@ -82,7 +82,8 @@ void AShooterCharacter::Tick(float DeltaTime)
 	CalculateCrosshairSpread(DeltaTime);
 
 	FHitResult ItemHitResult;
-	TraceUnderCrossHair(ItemHitResult);
+	FVector EndLocation;
+	TraceUnderCrossHair(ItemHitResult, EndLocation);
 	if (ItemHitResult.bBlockingHit) 
 	{
 
@@ -315,7 +316,55 @@ void AShooterCharacter::FireWeapon()
 }
 
 
-bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation, FVector & OutBeamLocation)
+bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation, FVector & OutBeamEndLocation)
+{
+	FHitResult CorsshairHitResult;
+	if(TraceUnderCrossHair(CorsshairHitResult, OutBeamEndLocation))
+	{
+		OutBeamEndLocation = CorsshairHitResult.Location;
+	}
+	else 
+	{
+		//1st LinceTrace가 Hit하지 않았을 때는 TraceUnderCrossHair의 EndLocation
+	}
+
+
+	// Barrel기준 2nd LineTracing - 여기서 OutBeamLocation 값이 정해짐!
+	FHitResult BarrelTraceHit;
+	const FVector WeaponTraceStart = MuzzleSocketLocation;
+	FVector StartToEnd{ OutBeamEndLocation - MuzzleSocketLocation };
+	const FVector WeaponTraceEnd = MuzzleSocketLocation + StartToEnd *1.25;
+	FVector TestBeamEnd = OutBeamEndLocation * 1.25;
+
+
+	GetWorld()->LineTraceSingleByChannel(
+		BarrelTraceHit,
+		WeaponTraceStart,
+		WeaponTraceEnd,
+		ECollisionChannel::ECC_Visibility);
+
+	// For debugging
+	DrawDebugLine(GetWorld(), WeaponTraceStart, WeaponTraceEnd, FColor::Red, true);
+	DrawDebugLine(GetWorld(), WeaponTraceStart, TestBeamEnd, FColor::Yellow, true);
+	FString OutBeamEndLog = FString::Printf(TEXT("BeamEnd*1.25f: %s"), *TestBeamEnd.ToString());
+	FString WeaponTraceEndLog = FString::Printf(TEXT("WeaponTraceEndLocation: %s"), *WeaponTraceEnd.ToString());
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(2, 5.f, FColor::Yellow, OutBeamEndLog);
+		GEngine->AddOnScreenDebugMessage(3, 5.f, FColor::Red, WeaponTraceEndLog);
+	}
+
+
+	if (BarrelTraceHit.bBlockingHit)
+	{
+		OutBeamEndLocation = BarrelTraceHit.Location;
+	}
+	return true;
+	
+}
+
+
+bool AShooterCharacter::TraceUnderCrossHair(FHitResult& ItemHitResult, FVector& OutEndLocation)
 {
 	//GEngine으로 ViewportSize 가져오기
 	FVector2D ViewportSize;
@@ -337,43 +386,29 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 		CrosshairWorldPosition,
 		CrosshairWorldDirection);
 
-	// 1.화면 중심 기준 LineTracing
+	// 화면 중심 기준 LineTracing
 	if (bScreenToWorld)
 	{
-		FHitResult ScreenTraceHit;
 		const FVector Start = CrosshairWorldPosition;
 		const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * WeaponRange;
-
-		OutBeamLocation = End;
+		OutEndLocation = End;
 
 		GetWorld()->LineTraceSingleByChannel(
-			ScreenTraceHit,
+			ItemHitResult,
 			Start,
 			End,
 			ECollisionChannel::ECC_Visibility);
 
-		if (ScreenTraceHit.bBlockingHit)
+		// For debugging
+		if (bIsShooting) 
 		{
-			OutBeamLocation = ScreenTraceHit.Location;
+			DrawDebugLine(GetWorld(), Start, End, FColor::Blue, true);
 		}
 
-
-		// 2. Barrel기준 LineTracing 
-		FHitResult BarrelTraceHit;
-		const FVector BarrelStart = MuzzleSocketLocation;
-		const FVector BarrelEnd = OutBeamLocation;
-
-		GetWorld()->LineTraceSingleByChannel(
-			BarrelTraceHit,
-			BarrelStart,
-			BarrelEnd,
-			ECollisionChannel::ECC_Visibility);
-
-		if (BarrelTraceHit.bBlockingHit)
+		if (ItemHitResult.bBlockingHit && ItemHitResult.GetActor())
 		{
-			OutBeamLocation = BarrelTraceHit.Location;
+			return true;
 		}
-		return true;
 	}
 	return false;
 }
@@ -439,46 +474,4 @@ void AShooterCharacter::AutoFireReset()
 	{
 		AutoFire();
 	}
-}
-
-bool AShooterCharacter::TraceUnderCrossHair(FHitResult& ItemHitResult) 
-{
-	//GEngine으로 ViewportSize 가져오기
-	FVector2D ViewportSize;
-	if (GEngine)
-	{
-		GEngine->GameViewport->GetViewportSize(ViewportSize);
-	}
-
-	// ViewportSize 조정 후 2D스크린 좌표를 3D 월드 좌표로 변환
-	FVector2D CrosshairLocation{ ViewportSize.X / 2.f, ViewportSize.Y / 2.f };
-	CrosshairLocation.Y -= 50.f;
-
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
-
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
-		UGameplayStatics::GetPlayerController(this, 0),
-		CrosshairLocation,
-		CrosshairWorldPosition,
-		CrosshairWorldDirection);
-
-	// 화면 중심 기준 LineTracing
-	if (bScreenToWorld)
-	{
-		const FVector Start = CrosshairWorldPosition;
-		const FVector End = CrosshairWorldPosition + CrosshairWorldDirection * WeaponRange;
-
-		GetWorld()->LineTraceSingleByChannel(
-			ItemHitResult,
-			Start,
-			End,
-			ECollisionChannel::ECC_Visibility);
-
-		if (ItemHitResult.bBlockingHit && ItemHitResult.GetActor())
-		{
-			return true;
-		}
-	}
-	return false;
 }
