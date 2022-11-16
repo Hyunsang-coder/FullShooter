@@ -326,6 +326,7 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 	else 
 	{
 		//1st LinceTrace가 Hit하지 않았을 때는 TraceUnderCrossHair의 EndLocation
+		return false;
 	}
 
 
@@ -343,17 +344,15 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 		WeaponTraceEnd,
 		ECollisionChannel::ECC_Visibility);
 
-	// For debugging
+	/* For debugging
 	DrawDebugLine(GetWorld(), WeaponTraceStart, WeaponTraceEnd, FColor::Red, true);
-	DrawDebugLine(GetWorld(), WeaponTraceStart, TestBeamEnd, FColor::Yellow, true);
-	FString OutBeamEndLog = FString::Printf(TEXT("BeamEnd*1.25f: %s"), *TestBeamEnd.ToString());
+	
 	FString WeaponTraceEndLog = FString::Printf(TEXT("WeaponTraceEndLocation: %s"), *WeaponTraceEnd.ToString());
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(2, 5.f, FColor::Yellow, OutBeamEndLog);
 		GEngine->AddOnScreenDebugMessage(3, 5.f, FColor::Red, WeaponTraceEndLog);
 	}
-
+	*/
 
 	if (BarrelTraceHit.bBlockingHit)
 	{
@@ -399,11 +398,12 @@ bool AShooterCharacter::TraceUnderCrossHair(FHitResult& ItemHitResult, FVector& 
 			End,
 			ECollisionChannel::ECC_Visibility);
 
-		// For debugging
+		/* For debugging
 		if (bIsShooting) 
 		{
 			DrawDebugLine(GetWorld(), Start, End, FColor::Blue, true);
 		}
+		*/
 
 		if (ItemHitResult.bBlockingHit && ItemHitResult.GetActor())
 		{
