@@ -22,7 +22,7 @@ protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
-	// Value 1 = 100% 원하는 속도
+	// Value 1 = 100% 占쏙옙占싹댐옙 占쌈듸옙
 	void TurnAtRate(float Value);
 	void LookUpAtRate(float Value);
 	void FireWeapon();
@@ -50,6 +50,7 @@ protected:
 
 	bool TraceUnderCrossHair(FHitResult& ItemHitResult, FVector& OutEndLocation);
 	
+	void TraceForItems();
 
 public:	
 	// Called every frame
@@ -153,13 +154,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	float WeaponRange = 5000.f;
 
+	bool bShouldTraceForItems = false;
+	int32 OverlappedItemCount = 0;
 	
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	class AItem* TraceHitItemLastFrame;
 
 
 public: 
-	// 값을 바꾸지 않는 함수는 모두 const로 만들어 주자
-	// 보통 단순하고 크기가 작은 함수에 FORCEINLINE 사용 (왔다갔다를 줄여줘서 성능 향상) 
+	
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE UCameraComponent* GetCamera() const { return FollowCamera; }
@@ -168,4 +171,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetCrosshairSpreadMultiplier() const;
+
+	void IncrementOverlappedItemCount(int32 Amount);
 };

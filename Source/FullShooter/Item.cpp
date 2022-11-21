@@ -4,6 +4,8 @@
 #include "Item.h"
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Components/SphereComponent.h"
+#include "ShooterCharacter.h"
 
 // Sets default values
 AItem::AItem()
@@ -21,6 +23,9 @@ AItem::AItem()
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(ItemMesh);
+
+	AreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
+	AreaSphere->SetupAttachment(ItemMesh);
 }
 
 // Called when the game starts or when spawned
@@ -28,12 +33,102 @@ void AItem::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	PickupWidget->SetVisibility(false);
+	// Hide the pickup widget
+	if (PickupWidget)
+	{	
+		PickupWidget->SetVisibility(false);
+	}
+	// Set Active StarsArray based on Rarity
+	SetActiveStars();
+
+	
+
+	//Set up overlap for AreaSphere
+	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnBeginOverlap);
+	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnEndOverlap);
 }
 
 // Called every frame
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
 
+void AItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep,
+	const FHitResult& SweepResult)
+{
+	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Red, TEXT("Overlapped!"));
+	AShooterCharacter* Character = Cast<AShooterCharacter>(OtherActor);
+	if (Character) 
+	{
+		Character->IncrementOverlappedItemCount(1);
+	}
+}
+
+void AItem::OnEndOverlap(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
+{
+	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Red, TEXT("Overlap ended!"));
+	AShooterCharacter* Character = Cast<AShooterCharacter>(OtherActor);
+	if (Character)
+	{
+		Character->IncrementOverlappedItemCount(-1);
+	}
+	PickupWidget->SetVisibility(false);
+}
+
+void AItem::SetActiveStars()
+{
+	// Not going to use 0 element 
+	for (int32 i = 0; i < 6; i++) 
+	{
+		ActiveStarts.Add(false);
+	}
+
+	switch (ItemRarity) 
+	{
+		case EItemRarity::EIR_Damaged:
+			ActiveStarts[1] = true;
+			break;
+		case EItemRarity::EIR_Common:
+			ActiveStarts[1] = true;
+			ActiveStarts[2] = true;
+			break;
+		case EItemRarity::EIR_Uncommon:
+			ActiveStarts[1] = true;
+			ActiveStarts[2] = true;
+			ActiveStarts[3] = true;
+			break;
+		case EItemRarity::EIR_Rare:
+			ActiveStarts[1] = true;
+			ActiveStarts[2] = true;
+			ActiveStarts[3] = true;
+			ActiveStarts[4] = true;
+			break;
+
+		case EItemRarity::EIR_Legendary:
+			ActiveStarts[1] = true;
+			ActiveStarts[2] = true;
+			ActiveStarts[3] = true;
+			ActiveStarts[4] = true;
+			ActiveStarts[5] = true;
+			break;
+	}
+
+}
+
+void AItem::DisplayWidget() 
+{
+	PickupWidget->SetVisibility(true);
+	GetWorld()->GetTimerManager().SetTimer(WidgetTimer, this, &AItem::ResetWidgetTimer, WidgetDisplayTime);
+}
+
+void AItem::ResetWidgetTimer() 
+{
+	PickupWidget->SetVisibility(false);
 }

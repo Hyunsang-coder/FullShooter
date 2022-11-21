@@ -80,21 +80,54 @@ void AShooterCharacter::Tick(float DeltaTime)
 	CameraInterpZoom(DeltaTime);
 	UpdateTurnLookupRate();
 	CalculateCrosshairSpread(DeltaTime);
+	TraceForItems();
 
-	FHitResult ItemHitResult;
-	FVector EndLocation;
-	TraceUnderCrossHair(ItemHitResult, EndLocation);
-	if (ItemHitResult.bBlockingHit) 
+}
+
+
+void AShooterCharacter::TraceForItems() 
+{
+	if (bShouldTraceForItems)
 	{
-
-		AItem* HitItem = Cast<AItem>(ItemHitResult.GetActor());
-		// Casting ¼º°ø ÇØ¾ß SetVisibility ½Ãµµ. ½ÇÆÐ Ã¼Å© ¾øÀ¸¸é Å©·¡½Ã 
-		if (HitItem && HitItem->GetPickupWidget()) 
+		FHitResult ItemHitResult;
+		FVector EndLocation;
+		TraceUnderCrossHair(ItemHitResult, EndLocation);
+		
+		if (ItemHitResult.bBlockingHit) 
 		{
-			HitItem->GetPickupWidget()->SetVisibility(true);
+			AItem* HitItem = Cast<AItem>(ItemHitResult.GetActor());
+			if (HitItem) 
+			{
+				// I decided to use a timer instead of Stephen's logic
+				HitItem->DisplayWidget();
+			}
 		}
-	}
 
+		//if (ItemHitResult.bBlockingHit)
+		//{
+		//	// HitResul
+		//	AItem* HitItem = Cast<AItem>(ItemHitResult.GetActor());
+		//	// Casting
+		//	if (HitItem && HitItem->GetPickupWidget())
+		//	{
+		//		HitItem->GetPickupWidget()->SetVisibility(true);
+		//		
+		//	}
+		//	// Hit an AItem last frame
+		//	if (TraceHitItemLastFrame) 
+		//	{
+		//		if (HitItem != TraceHitItemLastFrame) 
+		//		{
+		//			TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+		//		}
+		//	}
+		//	TraceHitItemLastFrame = HitItem;
+		//}
+		//else if (TraceHitItemLastFrame) 
+		//{
+		//	TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+		//}
+	}
 }
 
 void AShooterCharacter::UpdateTurnLookupRate() 
@@ -123,7 +156,7 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 	FVector Velocity { GetVelocity()};
 	Velocity.Z = 0.f;
 
-	// WalkSpeedRange ¹üÀ§ÀÇ Velocity.sizeÀÇ °ªÀ» VelocityMultiplierRange·Î º¯È¯ 
+	// Convert WalkSpeedRange to the range of VelocityMultiplierRange. Input is Velocity.Size(); 
 	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(
 		WalkSpeedRange,
 		VelocityMultiplierRange,
@@ -213,7 +246,6 @@ void AShooterCharacter::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		// Controller¿¡¼­ ·ÎÅ×ÀÌ¼ÇÀÌ¶û Yaw °¡Á®¿À±â
 		const FRotator Rotation{ Controller->GetControlRotation() };
 		const FRotator YawRotation{ 0, Rotation.Yaw, 0 };
 
@@ -227,7 +259,6 @@ void AShooterCharacter::MoveRight(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		// Controller¿¡¼­ ·ÎÅ×ÀÌ¼ÇÀÌ¶û Yaw °¡Á®¿À±â
 		const FRotator Rotation{ Controller->GetControlRotation() };
 		const FRotator YawRotation{ 0, Rotation.Yaw, 0 };
 
@@ -251,26 +282,23 @@ void AShooterCharacter::LookUpAtRate(float Rate)
 
 void AShooterCharacter::FireWeapon()
 {
-	// 1. »ç¿îµå ÇÃ·¹ÀÌ
 	if (FireSound) 
 	{
 		UGameplayStatics::PlaySound2D(this, FireSound);
 	}
 
-	//2 ¼ÒÄÏ Æ®·£½ºÆû °¡Á®¿À±â 
 	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
 	if (BarrelSocket)
 	{
 		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
 
-		//3. ÃÑ±¸ ÀÌÆåÆ® ÇÃ·¹ÀÌ 
 		if (MuzzleFlash)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
 		}
 
 				
-		//BeamEndPoint °¡Á® ¿Í -> Å¸°Ý È¿°ú(impact particle) ±¸Çö
+		//BeamEndPoint ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ -> Å¸ï¿½ï¿½ È¿ï¿½ï¿½(impact particle) ï¿½ï¿½ï¿½ï¿½
 		FVector BeamEndPoint;
 		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEndPoint);
 
@@ -284,7 +312,7 @@ void AShooterCharacter::FireWeapon()
 					BeamEndPoint);
 			}
 		}
-		// Beam È¿°ú 
+		// Beam È¿ï¿½ï¿½ 
 		if (BeamParticles)
 		{
 			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
@@ -325,12 +353,12 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 	}
 	else 
 	{
-		//1st LinceTrace°¡ HitÇÏÁö ¾Ê¾ÒÀ» ¶§´Â TraceUnderCrossHairÀÇ EndLocation
+		// EndLocation will be the end of the beam, which is set in TraceUnderCrossHair
 		return false;
 	}
 
 
-	// Barrel±âÁØ 2nd LineTracing - ¿©±â¼­ OutBeamLocation °ªÀÌ Á¤ÇØÁü!
+	// Barrelï¿½ï¿½ï¿½ï¿½ 2nd LineTracing - ï¿½ï¿½ï¿½â¼­ OutBeamLocation ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!
 	FHitResult BarrelTraceHit;
 	const FVector WeaponTraceStart = MuzzleSocketLocation;
 	FVector StartToEnd{ OutBeamEndLocation - MuzzleSocketLocation };
@@ -365,27 +393,28 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector & MuzzleSocketLocation,
 
 bool AShooterCharacter::TraceUnderCrossHair(FHitResult& ItemHitResult, FVector& OutEndLocation)
 {
-	//GEngineÀ¸·Î ViewportSize °¡Á®¿À±â
+	// Get Viewport Size 
 	FVector2D ViewportSize;
 	if (GEngine)
 	{
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
 	}
 
-	// ViewportSize Á¶Á¤ ÈÄ 2D½ºÅ©¸° ÁÂÇ¥¸¦ 3D ¿ùµå ÁÂÇ¥·Î º¯È¯
+	// Divide ViewportSize by 2 to get the center of the screen
 	FVector2D CrosshairLocation{ ViewportSize.X / 2.f, ViewportSize.Y / 2.f };
 	CrosshairLocation.Y -= 50.f;
 
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
 
+	// Get 3D positions of crosshair from the 2D position
 	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
 		UGameplayStatics::GetPlayerController(this, 0),
 		CrosshairLocation,
 		CrosshairWorldPosition,
 		CrosshairWorldDirection);
 
-	// È­¸é Áß½É ±âÁØ LineTracing
+	// LineTrace from the 3D position of the crosshair
 	if (bScreenToWorld)
 	{
 		const FVector Start = CrosshairWorldPosition;
@@ -440,15 +469,14 @@ void AShooterCharacter::FinishShootingSpread()
 
 void AShooterCharacter::FireButtonPressed()
 {
-	/* Pressed µ¿¾È¿¡ °è¼Ó ¾Æ·¡ ³»¿ëÀÌ ½ÇÇàµÈ´Ù´Â ¶æÀÌ ¾Æ´Ô,
-	´©¸£´Â ¼ø°£ ÇÑ ¹ø bool °ª º¯°æ ¹× ¾Æ·¡ ÇÔ¼ö ½ÇÇà */
+	//doesn't mean it's true while holding down the button.
+	// It is set to true once you hit the button.
 	bFireButtonPressed = true;
 	AutoFire();
 }
 
 void AShooterCharacter::FireButtonReleased()
 {
-	//¹öÆ° ¶¼´Â ¼ø°£ ¾Æ·¡ bool °ª ÇÑ ¹ø ¼¼ÆÃ
 	bFireButtonPressed = false;
 }
 
@@ -473,5 +501,19 @@ void AShooterCharacter::AutoFireReset()
 	if (bFireButtonPressed) 
 	{
 		AutoFire();
+	}
+}
+
+void AShooterCharacter::IncrementOverlappedItemCount(int32 Amount)
+{
+	if (OverlappedItemCount + Amount <= 0)
+	{
+		OverlappedItemCount = 0;
+		bShouldTraceForItems = false;
+	}
+	else 
+	{
+		OverlappedItemCount += Amount;
+		bShouldTraceForItems = true;
 	}
 }
