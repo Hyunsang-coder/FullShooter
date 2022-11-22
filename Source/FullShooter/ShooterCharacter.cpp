@@ -13,6 +13,7 @@
 #include "particles/ParticleSystemComponent.h"
 #include "Item.h"
 #include "Components/WidgetComponent.h"
+#include "Weapon.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter() :
@@ -70,6 +71,8 @@ void AShooterCharacter::BeginPlay()
 		FollowCamera->SetFieldOfView(DefaultFOV);
 		CurrentFOV = DefaultFOV;
 	}
+
+	SetDefaultWeapon();
 }
 
 // Called every frame
@@ -515,5 +518,23 @@ void AShooterCharacter::IncrementOverlappedItemCount(int32 Amount)
 	{
 		OverlappedItemCount += Amount;
 		bShouldTraceForItems = true;
+	}
+}
+
+
+void AShooterCharacter::SetDefaultWeapon() 
+{
+	if (DefaultWeaponClass)
+	{
+		// Spawn a weapon
+		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+
+		//Get the Hand Socket
+		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if (HandSocket)
+		{
+			HandSocket->AttachActor(DefaultWeapon, GetMesh());
+		}
+		EquippedWeapon = DefaultWeapon;
 	}
 }
