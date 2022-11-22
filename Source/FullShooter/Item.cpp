@@ -132,3 +132,8 @@ void AItem::ResetWidgetTimer()
 {
 	PickupWidget->SetVisibility(false);
 }
+
+void AItem::SetCollisionToIgnoreAll()
+{
+	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+}

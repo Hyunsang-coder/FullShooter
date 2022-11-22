@@ -536,5 +536,8 @@ void AShooterCharacter::SetDefaultWeapon()
 			HandSocket->AttachActor(DefaultWeapon, GetMesh());
 		}
 		EquippedWeapon = DefaultWeapon;
+
+		// Set Equipped Weapon's collision to ignore all
+		EquippedWeapon->SetCollisionToIgnoreAll();
 	}
 }

@@ -54,6 +54,9 @@ public:
 	UFUNCTION()
 	void ResetWidgetTimer();
 
+	// In order to set collision to ignoreall when it's equipped by Character
+	void SetCollisionToIgnoreAll();
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* ItemMesh;
