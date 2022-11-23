@@ -52,7 +52,9 @@ protected:
 	
 	void TraceForItems();
 
-	void SetDefaultWeapon();
+	class AWeapon* SpawnDefaultWeapon();
+
+	void EquipWeapon(AWeapon* Weapon);
 
 public:	
 	// Called every frame
@@ -62,7 +64,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	// Cemera related 
+	// Cemera related
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
@@ -163,7 +165,7 @@ private:
 	class AItem* TraceHitItemLastFrame;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
-	class AWeapon* EquippedWeapon;
+	AWeapon* EquippedWeapon;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> DefaultWeaponClass;

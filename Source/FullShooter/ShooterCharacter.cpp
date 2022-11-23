@@ -14,6 +14,8 @@
 #include "Item.h"
 #include "Components/WidgetComponent.h"
 #include "Weapon.h"
+#include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AShooterCharacter::AShooterCharacter() :
@@ -72,7 +74,7 @@ void AShooterCharacter::BeginPlay()
 		CurrentFOV = DefaultFOV;
 	}
 
-	SetDefaultWeapon();
+	EquipWeapon(SpawnDefaultWeapon());
 }
 
 // Called every frame
@@ -522,22 +524,31 @@ void AShooterCharacter::IncrementOverlappedItemCount(int32 Amount)
 }
 
 
-void AShooterCharacter::SetDefaultWeapon() 
+AWeapon* AShooterCharacter::SpawnDefaultWeapon() 
 {
 	if (DefaultWeaponClass)
 	{
 		// Spawn a weapon
 		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+		return DefaultWeapon;
+	}
+	return nullptr;
+}
 
-		//Get the Hand Socket
-		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
-		if (HandSocket)
-		{
-			HandSocket->AttachActor(DefaultWeapon, GetMesh());
-		}
-		EquippedWeapon = DefaultWeapon;
+void AShooterCharacter::EquipWeapon(AWeapon* Weapon) 
+{
+	// Set Weapon's Collision to IgnoreAll
+	if (Weapon) 
+	{
+		Weapon->GetAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		Weapon->GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	}
 
-		// Set Equipped Weapon's collision to ignore all
-		EquippedWeapon->SetCollisionToIgnoreAll();
+	//Get the Hand Socket
+	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+	if (HandSocket)
+	{
+		HandSocket->AttachActor(Weapon, GetMesh());
+		EquippedWeapon = Weapon;
 	}
 }

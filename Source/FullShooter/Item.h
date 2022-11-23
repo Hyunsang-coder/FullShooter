@@ -90,6 +90,7 @@ private:
 public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; };
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; };
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; };
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 
 	
