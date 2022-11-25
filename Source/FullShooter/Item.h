@@ -13,7 +13,21 @@ enum class EItemRarity : uint8
 	EIR_Common UMETA(DisplayName = "Common"),
 	EIR_Uncommon UMETA(DisplayName = "Uncommon"),
 	EIR_Rare UMETA(DisplayName = "Rare"),
-	EIR_Legendary UMETA(DisplayName = "Legendary")
+	EIR_Legendary UMETA(DisplayName = "Legendary"),
+
+	EIR_MAX UMETA(DisplayName = "DefaultMax")
+};
+
+UENUM(BlueprintType)
+enum class EItemState : uint8
+{
+	EIS_PickUp UMETA(DisplayName = "PickUp"),
+	EIS_EquipInterp UMETA(DisplayName = "EquipInterp"),
+	EIS_PickedUp UMETA(DisplayName = "PickedUp"),
+	EIS_Equipped UMETA(DisplayName = "Equipped"),
+	EIS_Falling UMETA(DisplayName = "Falling"),
+
+	EIS_Max UMETA(DisplayName = "DefaultMax")
 };
 
 UCLASS()
@@ -44,6 +58,8 @@ protected:
 
 	// Set Active Stars based on rarity
 	void SetActiveStars();
+
+	void SetItemProperties(EItemState State);
 	
 
 public:	
@@ -54,8 +70,7 @@ public:
 	UFUNCTION()
 	void ResetWidgetTimer();
 
-	// In order to set collision to ignoreall when it's equipped by Character
-	void SetCollisionToIgnoreAll();
+	
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
@@ -87,11 +102,17 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	TArray<bool> ActiveStarts;
 
+	//State of the Itemn//
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	EItemState ItemState = EItemState::EIS_PickUp;	
+
 public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; };
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; };
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; };
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
+	FORCEINLINE EItemState GetItemState() const { return ItemState; }
+	void SetItemState(EItemState State);
 
 	
 };

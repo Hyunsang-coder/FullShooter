@@ -41,11 +41,11 @@ void AItem::BeginPlay()
 	// Set Active StarsArray based on Rarity
 	SetActiveStars();
 
-	
-
 	//Set up overlap for AreaSphere
 	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnBeginOverlap);
 	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnEndOverlap);
+
+	SetItemProperties(ItemState);
 }
 
 // Called every frame
@@ -60,7 +60,7 @@ void AItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 	int32 OtherBodyIndex, bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Red, TEXT("Overlapped!"));
+	//GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Red, TEXT("Overlapped!"));
 	AShooterCharacter* Character = Cast<AShooterCharacter>(OtherActor);
 	if (Character) 
 	{
@@ -73,7 +73,7 @@ void AItem::OnEndOverlap(UPrimitiveComponent* OverlappedComponent,
 	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
-	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Red, TEXT("Overlap ended!"));
+	//GEngine->AddOnScreenDebugMessage(4, 3.f, FColor::Red, TEXT("Overlap ended!"));
 	AShooterCharacter* Character = Cast<AShooterCharacter>(OtherActor);
 	if (Character)
 	{
@@ -122,10 +122,49 @@ void AItem::SetActiveStars()
 
 }
 
+void AItem::SetItemProperties(EItemState State)
+{
+	switch (State) 
+	{
+		case(EItemState::EIS_PickUp):
+		//Set Mesh Properties
+			ItemMesh->SetSimulatePhysics(false);
+			ItemMesh->SetVisibility(true);
+			ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Set AreaSphere properties
+			AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		//Set CollisionBox properties
+			CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			CollisionBox->SetCollisionResponseToChannel(
+				ECollisionChannel::ECC_Visibility, 
+				ECollisionResponse::ECR_Block);
+			CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			break;
+
+		case(EItemState::EIS_Equipped):
+			//Set mesh properties 
+			ItemMesh->SetSimulatePhysics(false);
+			ItemMesh->SetVisibility(true);
+			ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			//Set AreaSphere properties
+			AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			//Set CollisionBox properties
+			CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			break;
+
+	}
+}
+
 void AItem::DisplayWidget() 
 {
 	PickupWidget->SetVisibility(true);
 	GetWorld()->GetTimerManager().SetTimer(WidgetTimer, this, &AItem::ResetWidgetTimer, WidgetDisplayTime);
+
 }
 
 void AItem::ResetWidgetTimer() 
@@ -133,7 +172,9 @@ void AItem::ResetWidgetTimer()
 	PickupWidget->SetVisibility(false);
 }
 
-void AItem::SetCollisionToIgnoreAll()
+
+void AItem::SetItemState(EItemState State)
 {
-	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	ItemState = State;
+	SetItemProperties(State);
 }

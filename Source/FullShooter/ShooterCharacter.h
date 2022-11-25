@@ -56,6 +56,11 @@ protected:
 
 	void EquipWeapon(AWeapon* Weapon);
 
+	void DetachWeapon();
+
+	void SelectButtonPressed();
+	void SelectButtonReleased();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

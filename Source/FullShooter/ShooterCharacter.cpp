@@ -204,12 +204,13 @@ void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
 		CrosshairAimFactor + 
 		CrosshairShootingFactor;
 
-
+	/*
 	FString VelocityFactorLog = FString::Printf(TEXT("CrosshairSpreadMultiplier: %f"), CorsshairSpreadMultiplier);
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(0, 2.f, FColor::Yellow, VelocityFactorLog);
 	}
+	*/
 }
 
 void AShooterCharacter::CameraInterpZoom(float DeltaTime) 
@@ -241,6 +242,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("FireButton", EInputEvent::IE_Released, this, &AShooterCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("AimButton", EInputEvent::IE_Pressed, this, &AShooterCharacter::AimButtonPressed);
 	PlayerInputComponent->BindAction("AimButton", EInputEvent::IE_Released, this, &AShooterCharacter::AimButtonReleased);
+	
+	PlayerInputComponent->BindAction("Select", EInputEvent::IE_Pressed, this, &AShooterCharacter::SelectButtonPressed);
+	PlayerInputComponent->BindAction("Select", EInputEvent::IE_Released, this, &AShooterCharacter::SelectButtonReleased);
 
 }
 
@@ -537,18 +541,31 @@ AWeapon* AShooterCharacter::SpawnDefaultWeapon()
 
 void AShooterCharacter::EquipWeapon(AWeapon* Weapon) 
 {
-	// Set Weapon's Collision to IgnoreAll
-	if (Weapon) 
-	{
-		Weapon->GetAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		Weapon->GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	}
-
 	//Get the Hand Socket
 	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
 	if (HandSocket)
 	{
 		HandSocket->AttachActor(Weapon, GetMesh());
 		EquippedWeapon = Weapon;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 	}
+}
+
+void AShooterCharacter::DetachWeapon()
+{
+	if (EquippedWeapon) 
+	{
+		FDetachmentTransformRules TransformRules(EDetachmentRule::KeepWorld, true);
+		EquippedWeapon->GetItemMesh()->DetachFromComponent(TransformRules);
+	}
+}
+
+void AShooterCharacter::SelectButtonPressed()
+{
+	DetachWeapon();
+}
+
+
+void AShooterCharacter::SelectButtonReleased()
+{
 }
