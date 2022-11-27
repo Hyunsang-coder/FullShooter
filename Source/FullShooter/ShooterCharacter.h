@@ -56,7 +56,9 @@ protected:
 
 	void EquipWeapon(AWeapon* Weapon);
 
-	void DetachWeapon();
+	void DropWeapon();
+
+	void SwapWeapon(AWeapon* Weapon);
 
 	void SelectButtonPressed();
 	void SelectButtonReleased();
@@ -171,6 +173,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	AWeapon* EquippedWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItem;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> DefaultWeaponClass;

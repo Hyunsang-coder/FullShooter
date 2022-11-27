@@ -98,40 +98,32 @@ void AShooterCharacter::TraceForItems()
 		FVector EndLocation;
 		TraceUnderCrossHair(ItemHitResult, EndLocation);
 		
-		if (ItemHitResult.bBlockingHit) 
+		if (ItemHitResult.bBlockingHit)
 		{
-			AItem* HitItem = Cast<AItem>(ItemHitResult.GetActor());
-			if (HitItem) 
+			// HitResul -> cast and turn on widget 
+			TraceHitItem = Cast<AItem>(ItemHitResult.GetActor());
+			
+			if (TraceHitItem && TraceHitItem->GetPickupWidget())
 			{
-				// I decided to use a timer instead of Stephen's logic
-				HitItem->DisplayWidget();
+				TraceHitItem->GetPickupWidget()->SetVisibility(true);
+				
 			}
+			// If hit a new item, last item's widget will be turned off 
+			if (TraceHitItemLastFrame) 
+			{
+				if (TraceHitItem != TraceHitItemLastFrame) 
+				{
+					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+				}
+			}
+			// Set the last item to this item
+			TraceHitItemLastFrame = TraceHitItem;
 		}
-
-		//if (ItemHitResult.bBlockingHit)
-		//{
-		//	// HitResul
-		//	AItem* HitItem = Cast<AItem>(ItemHitResult.GetActor());
-		//	// Casting
-		//	if (HitItem && HitItem->GetPickupWidget())
-		//	{
-		//		HitItem->GetPickupWidget()->SetVisibility(true);
-		//		
-		//	}
-		//	// Hit an AItem last frame
-		//	if (TraceHitItemLastFrame) 
-		//	{
-		//		if (HitItem != TraceHitItemLastFrame) 
-		//		{
-		//			TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
-		//		}
-		//	}
-		//	TraceHitItemLastFrame = HitItem;
-		//}
-		//else if (TraceHitItemLastFrame) 
-		//{
-		//	TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
-		//}
+		// If not hitting any item, last item's widget will be turned off
+		else if (TraceHitItemLastFrame) 
+		{
+			TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+		}
 	}
 }
 
@@ -539,19 +531,9 @@ AWeapon* AShooterCharacter::SpawnDefaultWeapon()
 	return nullptr;
 }
 
-void AShooterCharacter::EquipWeapon(AWeapon* Weapon) 
-{
-	//Get the Hand Socket
-	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
-	if (HandSocket)
-	{
-		HandSocket->AttachActor(Weapon, GetMesh());
-		EquippedWeapon = Weapon;
-		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
-	}
-}
 
-void AShooterCharacter::DetachWeapon()
+
+void AShooterCharacter::DropWeapon()
 {
 	if (EquippedWeapon) 
 	{
@@ -563,9 +545,34 @@ void AShooterCharacter::DetachWeapon()
 	}
 }
 
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if (WeaponToEquip == nullptr) return;
+	//Get the Hand Socket
+	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+	if (HandSocket)
+	{
+		HandSocket->AttachActor(WeaponToEquip, GetMesh());
+		EquippedWeapon = WeaponToEquip;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+		TraceHitItem = nullptr;
+		TraceHitItemLastFrame = nullptr;
+	}
+}
+
+void AShooterCharacter::SwapWeapon(AWeapon* Weapon)
+{
+	DropWeapon();
+	EquipWeapon(Weapon);
+}
+
 void AShooterCharacter::SelectButtonPressed()
 {
-	DetachWeapon();
+	if (TraceHitItem) 
+	{
+		AWeapon* Weapon = Cast<AWeapon>(TraceHitItem);
+		SwapWeapon(Weapon);
+	};
 }
 
 
