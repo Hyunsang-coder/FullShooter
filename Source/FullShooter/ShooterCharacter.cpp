@@ -579,3 +579,22 @@ void AShooterCharacter::SelectButtonPressed()
 void AShooterCharacter::SelectButtonReleased()
 {
 }
+
+FVector AShooterCharacter::GetCameraInterpLocation() 
+{
+	const FVector CameraLocation = FollowCamera->GetComponentLocation();
+	const FVector CameraForward = FollowCamera->GetForwardVector();
+
+	return CameraLocation + (CameraForward * InterpDistance) + (FVector(0.f, 0.f, InterpHeight));
+}
+
+// Get a pickup item that just inished interpolation
+void AShooterCharacter::GetPickUpItem(AItem* Item)
+{
+	//check if it's a weapon or an item 
+	auto Weapon = Cast<AWeapon>(Item);
+	if (Weapon) 
+	{
+		SwapWeapon(Weapon);
+	}
+}

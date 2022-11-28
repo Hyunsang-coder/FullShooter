@@ -102,7 +102,11 @@ private:
 
 	//State of the Itemn//
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
-	EItemState ItemState = EItemState::EIS_PickUp;	
+	EItemState ItemState = EItemState::EIS_PickUp;
+
+	//State of the Itemn//
+	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	class UCurveFloat* InterpZCurve;
 
 public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; };

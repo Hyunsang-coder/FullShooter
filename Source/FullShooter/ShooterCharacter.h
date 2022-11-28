@@ -180,6 +180,13 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Interp", meta = (AllowPrivateAccess = "true"))
+	float InterpDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Interp", meta = (AllowPrivateAccess = "true"))
+	float InterpHeight;
+
+
 
 public: 
 	
@@ -193,4 +200,8 @@ public:
 	float GetCrosshairSpreadMultiplier() const;
 
 	void IncrementOverlappedItemCount(int32 Amount);
+
+	FVector GetCameraInterpLocation();
+
+	void GetPickUpItem(AItem* Item);
 };
