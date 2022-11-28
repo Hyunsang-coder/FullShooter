@@ -67,8 +67,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void DisplayWidget();
 
-	UFUNCTION()
-	void ResetWidgetTimer();
 
 	
 
