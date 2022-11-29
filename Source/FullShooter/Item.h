@@ -61,6 +61,7 @@ protected:
 
 	void SetItemProperties(EItemState State);
 	
+	void FinishInterp();
 
 public:	
 	// Called every frame
@@ -104,9 +105,27 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	EItemState ItemState = EItemState::EIS_PickUp;
 
-	//State of the Itemn//
+	//Interp-related variables//
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	class UCurveFloat* InterpZCurve;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	class AShooterCharacter* Player;
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	bool bIsInterp = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	FVector InterpStartLocation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	FVector TargetLocation;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	FTimerHandle InterpTimer;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	float InterpZTime = 0.7f;
+	
+
 
 public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; };
@@ -116,5 +135,6 @@ public:
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 	void SetItemState(EItemState State);
 
+	void StartInterp(AShooterCharacter* Player);
 	
 };

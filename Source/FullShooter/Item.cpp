@@ -2,10 +2,10 @@
 
 
 #include "Item.h"
+#include "ShooterCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
-#include "ShooterCharacter.h"
 
 // Sets default values
 AItem::AItem()
@@ -175,14 +175,30 @@ void AItem::SetItemProperties(EItemState State)
 			CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			break;
+		case(EItemState::EIS_EquipInterp):
+			PickupWidget->SetVisibility(false);
+			//Set mesh properties 
+			ItemMesh->SetVisibility(true);
+			ItemMesh->SetSimulatePhysics(false);
+			ItemMesh->SetEnableGravity(false);
+			ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			//Set AreaSphere properties
+			AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			//Set CollisionBox properties
+			CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+			CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			break;
 
 	}
 }
 
+
+
 void AItem::DisplayWidget() 
 {
 	PickupWidget->SetVisibility(true);
-
 }
 
 
@@ -190,4 +206,27 @@ void AItem::SetItemState(EItemState State)
 {
 	ItemState = State;
 	SetItemProperties(State);
+}
+
+void AItem::StartInterp(AShooterCharacter* _Player)
+{
+	Player = _Player;
+	InterpStartLocation = GetActorLocation();
+	bIsInterp = true;
+	SetItemState(EItemState::EIS_EquipInterp);
+
+	GetWorldTimerManager().SetTimer(
+		InterpTimer,
+		this,
+		&AItem::FinishInterp,
+		InterpZTime);
+}
+
+void AItem::FinishInterp()
+{
+	bIsInterp = false;
+	if (Player) 
+	{
+		Player->GetPickUpItem(this);
+	}
 }
