@@ -133,6 +133,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	float InterpY_Value = 0.f;
 	
+	// Delta Yaw between Camera Yaw and Item Yaw
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	float InitialDeltaYaw = 0.f;
 
 
 public:

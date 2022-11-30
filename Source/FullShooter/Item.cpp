@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values
 AItem::AItem()
@@ -223,6 +224,13 @@ void AItem::StartInterp(AShooterCharacter* _Player)
 		&AItem::FinishInterp,
 		InterpZTime);
 
+	//Get Delta Yaw
+	const FRotator CameraRotation = Player->GetCamera()->GetComponentRotation();
+	const FRotator ItemRotation = GetActorRotation();
+	InitialDeltaYaw = ItemRotation.Yaw - CameraRotation.Yaw;
+
+	FString DeltaYawLog = FString::Printf(TEXT("Initial Delta Yaw: %f"), InitialDeltaYaw);
+	GEngine->AddOnScreenDebugMessage(2, 10.f, FColor::White, DeltaYawLog);
 }
 
 void AItem::FinishInterp()
@@ -268,6 +276,11 @@ void AItem::MoveItem(float DeltaTime)
 		ItemLocation.Z += CurveValue * DeltaZ;
 		// Change the item's location 
 		SetActorLocation(ItemLocation, false, nullptr, ETeleportType::TeleportPhysics);
+
+		// Change the item's rotation
+		const FRotator CameraRotation = Player->GetCamera()->GetComponentRotation();
+		const float ItemYaw = CameraRotation.Yaw + InitialDeltaYaw;
+		SetActorRotation(FRotator(0.f, ItemYaw, 0.f), ETeleportType::TeleportPhysics);
 	}
 	
 }
