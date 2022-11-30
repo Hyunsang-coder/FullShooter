@@ -53,7 +53,7 @@ void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	MoveZCurve(DeltaTime);
+	MoveItem(DeltaTime);
 }
 
 void AItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -234,7 +234,7 @@ void AItem::FinishInterp()
 	}
 }
 
-void AItem::MoveZCurve(float DeltaTime) 
+void AItem::MoveItem(float DeltaTime) 
 {
 	if (!bIsInterp) return;
 
@@ -253,6 +253,16 @@ void AItem::MoveZCurve(float DeltaTime)
 		//Vector from Item to InterpTargetLocation, only get Z.
 		const FVector ItemToCamera = { 0, 0, (InterpTargetLocation - ItemLocation).Z };
 		const float DeltaZ = ItemToCamera.Size(); // In fact, not necessary here.
+
+
+		// Interp x, y values;
+		InterpX_Value = FMath::FInterpTo(InterpStartLocation.X, InterpTargetLocation.X, DeltaTime, 30.f);
+		InterpY_Value = FMath::FInterpTo(InterpStartLocation.Y, InterpTargetLocation.Y, DeltaTime, 30.f);
+
+
+		// Apply the value to the item locaiton
+		ItemLocation.X = InterpX_Value;
+		ItemLocation.Y = InterpY_Value;
 
 		// Multiply curveValue (based on elapsed time) by DeltaZ
 		ItemLocation.Z += CurveValue * DeltaZ;

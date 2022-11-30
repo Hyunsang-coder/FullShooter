@@ -63,7 +63,7 @@ protected:
 	
 	void FinishInterp();
 
-	void MoveZCurve(float DeltaTime);
+	void MoveItem(float DeltaTime);
 
 public:	
 	// Called every frame
@@ -126,6 +126,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	float InterpZTime = 0.7f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	float InterpX_Value = 0.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	float InterpY_Value = 0.f;
 	
 
 

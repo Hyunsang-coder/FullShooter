@@ -181,10 +181,10 @@ private:
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Interp", meta = (AllowPrivateAccess = "true"))
-	float InterpDistance;
+	float InterpDistance = 100.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Interp", meta = (AllowPrivateAccess = "true"))
-	float InterpHeight;
+	float InterpHeight = 50.f;
 
 
 
