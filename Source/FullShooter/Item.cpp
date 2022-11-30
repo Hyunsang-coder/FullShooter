@@ -52,6 +52,8 @@ void AItem::BeginPlay()
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	MoveZCurve(DeltaTime);
 }
 
 void AItem::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -216,10 +218,11 @@ void AItem::StartInterp(AShooterCharacter* _Player)
 	SetItemState(EItemState::EIS_EquipInterp);
 
 	GetWorldTimerManager().SetTimer(
-		InterpTimer,
+		InterpZTimer,
 		this,
 		&AItem::FinishInterp,
 		InterpZTime);
+
 }
 
 void AItem::FinishInterp()
@@ -229,4 +232,32 @@ void AItem::FinishInterp()
 	{
 		Player->GetPickUpItem(this);
 	}
+}
+
+void AItem::MoveZCurve(float DeltaTime) 
+{
+	if (!bIsInterp) return;
+
+	if (Player && InterpZCurve) 
+	{
+		// Get Elapsed Time by passing in InterpZTimer
+		const float ElapsedTime = GetWorldTimerManager().GetTimerElapsed(InterpZTimer);
+
+		// Get Z Curve value accoding to Elapsed Time 
+		const float CurveValue = InterpZCurve->GetFloatValue(ElapsedTime);
+
+		// Get Initial Item Location & 
+		FVector ItemLocation = InterpStartLocation;
+		InterpTargetLocation = Player->GetCameraInterpLocation();
+
+		//Vector from Item to InterpTargetLocation, only get Z.
+		const FVector ItemToCamera = { 0, 0, (InterpTargetLocation - ItemLocation).Z };
+		const float DeltaZ = ItemToCamera.Size(); // In fact, not necessary here.
+
+		// Multiply curveValue (based on elapsed time) by DeltaZ
+		ItemLocation.Z += CurveValue * DeltaZ;
+		// Change the item's location 
+		SetActorLocation(ItemLocation, false, nullptr, ETeleportType::TeleportPhysics);
+	}
+	
 }

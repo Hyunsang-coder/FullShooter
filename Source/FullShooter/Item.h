@@ -63,6 +63,8 @@ protected:
 	
 	void FinishInterp();
 
+	void MoveZCurve(float DeltaTime);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -117,10 +119,10 @@ private:
 	FVector InterpStartLocation;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
-	FVector TargetLocation;
+	FVector InterpTargetLocation;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
-	FTimerHandle InterpTimer;
+	FTimerHandle InterpZTimer;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	float InterpZTime = 0.7f;

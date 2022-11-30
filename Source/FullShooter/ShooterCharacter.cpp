@@ -568,10 +568,9 @@ void AShooterCharacter::SwapWeapon(AWeapon* Weapon)
 
 void AShooterCharacter::SelectButtonPressed()
 {
-	if (TraceHitItem) 
-	{
-		AWeapon* Weapon = Cast<AWeapon>(TraceHitItem);
-		SwapWeapon(Weapon);
+	if(TraceHitItem) 
+	{	
+		TraceHitItem->StartInterp(this);
 	};
 }
 
