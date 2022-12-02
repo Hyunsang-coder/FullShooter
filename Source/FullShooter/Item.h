@@ -111,10 +111,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	class UCurveFloat* InterpZCurve;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
+	class UCurveFloat* ScaleCurve;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	class AShooterCharacter* Player;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	bool bIsInterp = false;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Item Property", meta = (AllowPrivateAccess = "true"))
 	FVector InterpStartLocation;
 

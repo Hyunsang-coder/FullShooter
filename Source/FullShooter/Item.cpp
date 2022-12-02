@@ -239,6 +239,9 @@ void AItem::FinishInterp()
 	if (Player) 
 	{
 		Player->GetPickUpItem(this);
+
+		//Sacale back the shurken item
+		SetActorScale3D(FVector(1.f));
 	}
 }
 
@@ -281,6 +284,14 @@ void AItem::MoveItem(float DeltaTime)
 		const FRotator CameraRotation = Player->GetCamera()->GetComponentRotation();
 		const float ItemYaw = CameraRotation.Yaw + InitialDeltaYaw;
 		SetActorRotation(FRotator(0.f, ItemYaw, 0.f), ETeleportType::TeleportPhysics);
+
+		// Change the item's scale
+		if (ScaleCurve) 
+		{
+			const float ItemScale = ScaleCurve->GetFloatValue(ElapsedTime);
+			SetActorScale3D(FVector(ItemScale));
+		}
+		
 	}
 	
 }
